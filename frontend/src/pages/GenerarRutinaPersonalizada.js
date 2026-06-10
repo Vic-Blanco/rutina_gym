@@ -17,7 +17,15 @@ function GenerarRutinaPersonalizada() {
     objetivo: 'HIPERTROFIA',
     diasDisponibles: 4,
     gruposMusculares: [],
+    tipoEntradaCalor: 'auto',
   });
+
+  const tiposEntradaCalor = [
+    { value: 'auto',               label: '🤖 Automático',       desc: 'Prolog elige según el día' },
+    { value: 'cardio_ligero',      label: '🏃 Cardio Ligero',    desc: 'Trote, saltos o bicicleta' },
+    { value: 'movilidad_dinamica', label: '🤸 Movilidad Dinámica', desc: 'Estiramientos activos' },
+    { value: 'activacion_muscular',label: '⚡ Activación Muscular', desc: 'Ejercicios de activación' },
+  ];
 
   const niveles = [
     { value: 'INICIAL', label: 'Principiante', desc: 'Menos de 6 meses de experiencia' },
@@ -28,8 +36,8 @@ function GenerarRutinaPersonalizada() {
   const objetivos = [
     { value: 'HIPERTROFIA', label: '💪 Hipertrofia', desc: 'Ganar masa muscular' },
     { value: 'FUERZA', label: '⚡ Fuerza', desc: 'Aumentar capacidad de levantamiento' },
-    { value: 'RESISTENCIA', label: '🏃 Resistencia', desc: 'Mejorar capacidad aeróbica' },
-    { value: 'ACONDICIONAMIENTO', label: '🎯 Acondicionamiento', desc: 'Fitness general' },
+    { value: 'DEFINICION', label: '✂️ Definición', desc: 'Reducir grasa y marcar músculo' },
+    { value: 'HIBRIDO', label: '⚡ Híbrido', desc: 'Mezcla de fuerza y resistencia' },
   ];
 
   const gruposMusculares = [
@@ -107,6 +115,7 @@ function GenerarRutinaPersonalizada() {
         nivel: formData.nivel,
         diasDisponibles: formData.diasDisponibles,
         gruposMusculares: formData.gruposMusculares,
+        tipoEntradaCalor: formData.tipoEntradaCalor === 'auto' ? null : formData.tipoEntradaCalor,
       });
 
       localStorage.setItem('rutinaActual', JSON.stringify(response.data));
@@ -265,6 +274,25 @@ function GenerarRutinaPersonalizada() {
               </div>
             </div>
           )}
+
+          {/* ENTRADA EN CALOR */}
+          <div className="form-section">
+            <label>🔥 Tipo de Entrada en Calor</label>
+            <p className="section-description">El sistema incluye 1 entrada en calor + 2-3 ejercicios de movilidad</p>
+            <div className="selector-group">
+              {tiposEntradaCalor.map(tipo => (
+                <button
+                  key={tipo.value}
+                  type="button"
+                  className={`selector-btn ${formData.tipoEntradaCalor === tipo.value ? 'active' : ''}`}
+                  onClick={() => setFormData({ ...formData, tipoEntradaCalor: tipo.value })}
+                >
+                  <div className="btn-label">{tipo.label}</div>
+                  <div className="btn-desc">{tipo.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* BOTÓN */}
           <button

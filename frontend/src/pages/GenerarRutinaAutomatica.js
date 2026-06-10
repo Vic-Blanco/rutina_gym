@@ -28,8 +28,8 @@ function GenerarRutinaAutomatica() {
   const objetivos = [
     { value: 'HIPERTROFIA', label: '💪 Hipertrofia', desc: 'Ganar masa muscular' },
     { value: 'FUERZA', label: '⚡ Fuerza', desc: 'Aumentar capacidad de levantamiento' },
-    { value: 'RESISTENCIA', label: '🏃 Resistencia', desc: 'Mejorar capacidad aeróbica' },
-    { value: 'ACONDICIONAMIENTO', label: '🎯 Acondicionamiento', desc: 'Fitness general' },
+    { value: 'DEFINICION', label: '✂️ Definición', desc: 'Reducir grasa y marcar músculo' },
+    { value: 'HIBRIDO', label: '⚡ Híbrido', desc: 'Mezcla de fuerza y resistencia' },
   ];
 
   // Cargar información del sistema experto al montar el componente

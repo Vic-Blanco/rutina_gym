@@ -202,52 +202,72 @@ function DetalleRutina() {
         {rutina.diasEntrenamiento && rutina.diasEntrenamiento.length > 0 && (
           <div className="dias-section">
             <h2>📅 Plan de Entrenamiento</h2>
-            {rutina.diasEntrenamiento.map((dia, idx) => (
-              <div key={idx} className="dia-card">
-                <h3>Día {dia.numeroDia}</h3>
-                {dia.gruposMusculares && (
-                  <p className="grupos-del-dia">
-                    Grupos: {dia.gruposMusculares.join(', ')}
-                  </p>
-                )}
-                {dia.ejercicios && dia.ejercicios.length > 0 && (
-                  <div className="ejercicios-list">
-                    {dia.ejercicios.map((ej, ejIdx) => (
-                      <div key={ejIdx} className="ejercicio-item">
-                        <div className="ejercicio-header">
-                          <img 
-                            src={getExerciseImage(ej)} 
-                            alt={ej.nombre}
-                            className="ejercicio-imagen"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                          <div className="ejercicio-info">
-                            <h4>{ej.nombre}</h4>
-                            <p className="ejercicio-detalles">
-                              Tipo: {ej.tipo} | Patrón: {ej.patron}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="ejercicio-parametros">
-                          {ej.series && (
-                            <span className="param-badge">
-                              {ej.series} x {ej.repeticiones} reps
-                            </span>
-                          )}
-                          {ej.descansoSegundos && (
-                            <span className="param-badge">
-                              ⏱️ {ej.descansoSegundos}s descanso
-                            </span>
-                          )}
-                        </div>
+            {rutina.diasEntrenamiento.map((dia, idx) => {
+              const ejercicios = dia.ejercicios || [];
+              const entradaCalor = ejercicios.filter(e => e.grupoMuscular === 'CARDIO');
+              const movilidad   = ejercicios.filter(e => e.grupoMuscular === 'MOVILIDAD' || e.grupoMuscular === 'ACTIVACION');
+              const principales = ejercicios.filter(e => e.grupoMuscular !== 'CARDIO' && e.grupoMuscular !== 'MOVILIDAD' && e.grupoMuscular !== 'ACTIVACION');
+
+              const renderEjercicios = (lista, colorClass) =>
+                lista.map((ej, ejIdx) => (
+                  <div key={ejIdx} className={`ejercicio-item ${colorClass}`}>
+                    <div className="ejercicio-header">
+                      <img
+                        src={getExerciseImage(ej)}
+                        alt={ej.nombre}
+                        className="ejercicio-imagen"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                      <div className="ejercicio-info">
+                        <h4>{ej.nombre}</h4>
+                        <p className="ejercicio-detalles">
+                          {ej.grupoMuscular} | {ej.tipo} | {ej.patron}
+                        </p>
                       </div>
-                    ))}
+                    </div>
+                    <div className="ejercicio-parametros">
+                      {ej.series && (
+                        <span className="param-badge">
+                          {ej.series} × {ej.repeticiones} reps
+                        </span>
+                      )}
+                      {ej.descansoSegundos && (
+                        <span className="param-badge">⏱️ {ej.descansoSegundos}s</span>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            ))}
+                ));
+
+              return (
+                <div key={idx} className="dia-card">
+                  <div className="dia-card-header">
+                    <h3>Día {dia.numeroDia}</h3>
+                    {dia.descripcion && <span className="dia-desc">{dia.descripcion}</span>}
+                  </div>
+
+                  {entradaCalor.length > 0 && (
+                    <div className="ejercicios-bloque bloque-calor">
+                      <h4>🔥 Entrada en Calor</h4>
+                      {renderEjercicios(entradaCalor, 'ej-calor')}
+                    </div>
+                  )}
+
+                  {movilidad.length > 0 && (
+                    <div className="ejercicios-bloque bloque-movilidad">
+                      <h4>🤸 Movilidad y Activación</h4>
+                      {renderEjercicios(movilidad, 'ej-movilidad')}
+                    </div>
+                  )}
+
+                  {principales.length > 0 && (
+                    <div className="ejercicios-bloque bloque-principales">
+                      <h4>💪 Ejercicios Principales</h4>
+                      {renderEjercicios(principales, 'ej-principal')}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 

@@ -9,6 +9,9 @@ import java.util.concurrent.*;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.rutinagym.dto.GenerarRutinaRequest;
+import com.rutinagym.model.GrupoMuscular;
+
 
 /**
  * Servicio que integra Prolog para generar rutinas basadas en reglas lógicas.
@@ -576,13 +579,20 @@ public class PrologService {
         return grupos;
     }
     
-    /**
-     * NUEVO: Genera rutina COMPLETA desde Prolog con generar_rutina_semanal
-     * Devuelve estructura: Map con días y ejercicios
-     */
-    public Map<String, Object> generarRutinaCompletaDesdeProlog(String usuarioId, String objetivo, 
-                                                                   String nivel, Integer diasDisponibles, 
+    public Map<String, Object> generarRutinaCompletaDesdeProlog(String usuarioId, String objetivo,
+                                                                   String nivel, Integer diasDisponibles,
                                                                    List<String> gruposMusculares) {
+        return generarRutinaCompletaDesdeProlog(usuarioId, objetivo, nivel, diasDisponibles, gruposMusculares, null);
+    }
+
+    /**
+     * NUEVO: Genera rutina COMPLETA desde Prolog con generar_rutina_semanal.
+     * TipoEntradaCalor: cardio_ligero | movilidad_dinamica | activacion_muscular | null (auto).
+     */
+    public Map<String, Object> generarRutinaCompletaDesdeProlog(String usuarioId, String objetivo,
+                                                                   String nivel, Integer diasDisponibles,
+                                                                   List<String> gruposMusculares,
+                                                                   String tipoEntradaCalor) {
         logger.info("🔮 GENERANDO RUTINA COMPLETA DESDE PROLOG");
         logger.info("  Usuario: {} | Objetivo: {} | Nivel: {} | Días: {} | Grupos: {}", 
             usuarioId, objetivo, nivel, diasDisponibles, gruposMusculares);
@@ -604,45 +614,36 @@ public class PrologService {
                 return resultado;
             }
             
+            // Mapear nivel y objetivo Java → átomos Prolog (Prolog es la fuente de verdad)
+            String nivelProlog    = nivelAProlog(nivel);
+            String objetivoProlog = objetivoAProlog(objetivo);
+
+            // Determinar tipo de entrada en calor (Prolog: auto | cardio_ligero | movilidad_dinamica | activacion_muscular)
+            String tipoCalorProlog = (tipoEntradaCalor == null || tipoEntradaCalor.isBlank()) ? "auto" : tipoEntradaCalor.toLowerCase();
+
             String consulta;
-            
-            // Mapear niveles Java (INICIAL/INTERMEDIO/AVANZADO) a Prolog (principiante/intermedio/avanzado)
-            String nivelProlog = nivel.toLowerCase();
-            if (nivelProlog.equals("inicial")) {
-                nivelProlog = "principiante";
-            }
-            
-            // Convertir objetivo a minúsculas para Prolog
-            String objetivoProlog = objetivo.toLowerCase();
-            
-            // Detectar si es generación automática o personalizada
+
             if (gruposMusculares == null || gruposMusculares.isEmpty()) {
-                // GENERACIÓN AUTOMÁTICA: Prolog elige división según días
+                // GENERACIÓN AUTOMÁTICA
                 logger.info("🤖 MODO AUTOMÁTICO: Prolog decidirá división según {} días", diasDisponibles);
                 consulta = String.format(
-                    "generar_rutina_automatica('%s', '%s', '%s', %d, Rutina), write_canonical(Rutina).",
-                    usuarioId,
-                    nivelProlog,
-                    objetivoProlog,
-                    diasDisponibles
-                );
+                    "generar_rutina_automatica('%s', %s, %s, %d, Rutina), write_canonical(Rutina).",
+                    usuarioId, nivelProlog, objetivoProlog, diasDisponibles);
             } else {
-                // GENERACIÓN PERSONALIZADA: Prolog usa grupos suministrados
-                logger.info("🎯 MODO PERSONALIZADO: Grupos seleccionados: {}", gruposMusculares);
-                
-                // Convertir lista Java a lista Prolog en minúsculas (sin comillas)
+                // GENERACIÓN PERSONALIZADA
+                logger.info("🎯 MODO PERSONALIZADO: Grupos={} TipoCalor={}", gruposMusculares, tipoCalorProlog);
                 String gruposProlog = "[" + gruposMusculares.stream()
                     .map(g -> g.toLowerCase())
                     .collect(java.util.stream.Collectors.joining(", ")) + "]";
-                
-                consulta = String.format(
-                    "generar_rutina_personalizada('%s', '%s', '%s', %d, %s, Rutina), write_canonical(Rutina).",
-                    usuarioId,
-                    nivelProlog,
-                    objetivoProlog,
-                    diasDisponibles,
-                    gruposProlog
-                );
+                if ("auto".equals(tipoCalorProlog)) {
+                    consulta = String.format(
+                        "generar_rutina_personalizada('%s', %s, %s, %d, %s, Rutina), write_canonical(Rutina).",
+                        usuarioId, nivelProlog, objetivoProlog, diasDisponibles, gruposProlog);
+                } else {
+                    consulta = String.format(
+                        "generar_rutina_personalizada('%s', %s, %s, %d, %s, %s, Rutina), write_canonical(Rutina).",
+                        usuarioId, nivelProlog, objetivoProlog, diasDisponibles, gruposProlog, tipoCalorProlog);
+                }
             }
             
             logger.info("  → Consulta Prolog: {}", consulta);
@@ -679,259 +680,281 @@ public class PrologService {
     }
     
     /**
-     * Parser: Convierte estructura Prolog [dia(1, [...]), ...] a Map Java
+     * Mapea nivel Java (INICIAL/INTERMEDIO/AVANZADO) al átomo Prolog correspondiente.
+     */
+    private String nivelAProlog(String nivel) {
+        if (nivel == null) return "principiante";
+        return switch (nivel.toUpperCase()) {
+            case "INICIAL"     -> "principiante";
+            case "INTERMEDIO"  -> "intermedio";
+            case "AVANZADO"    -> "avanzado";
+            default            -> nivel.toLowerCase();
+        };
+    }
+
+    /**
+     * Mapea objetivo Java (HIPERTROFIA/FUERZA/DEFINICION/HIBRIDO)
+     * al átomo Prolog correspondiente (la KB Prolog es la fuente de verdad).
+     */
+    private String objetivoAProlog(String objetivo) {
+        if (objetivo == null) return "hipertrofia";
+        return switch (objetivo.toUpperCase()) {
+            case "HIPERTROFIA"      -> "hipertrofia";
+            case "FUERZA"           -> "fuerza";
+            case "DEFINICION"       -> "definicion";
+            case "HIBRIDO"          -> "hibrido";
+            default                 -> objetivo.toLowerCase();
+        };
+    }
+
+    // ============================================================
+    // HELPERS DE PARSING PROLOG
+    // ============================================================
+
+    /** Encuentra el índice del ')' que cierra la apertura en startParen. */
+    private int findMatchingParen(String s, int startParen) {
+        int depth = 0;
+        boolean inStr = false;
+        for (int i = startParen; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\'') { inStr = !inStr; continue; }
+            if (inStr) continue;
+            if (c == '(') depth++;
+            else if (c == ')') {
+                if (depth == 0) return i;
+                depth--;
+            }
+        }
+        return s.length() - 1;
+    }
+
+    /** Encuentra el índice del ']' que cierra la apertura en startBracket. */
+    private int findMatchingBracket(String s, int startBracket) {
+        int depth = 0;
+        boolean inStr = false;
+        for (int i = startBracket; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\'') { inStr = !inStr; continue; }
+            if (inStr) continue;
+            if (c == '[') depth++;
+            else if (c == ']') {
+                if (depth == 0) return i;
+                depth--;
+            }
+        }
+        return s.length() - 1;
+    }
+
+    /**
+     * Divide una cadena por comas de nivel superior (ignora comas dentro de paréntesis/corchetes).
+     * Devuelve como máximo maxParts partes (el resto va en la última).
+     */
+    private List<String> splitTopLevel(String s, int maxParts) {
+        List<String> parts = new ArrayList<>();
+        int depth = 0;
+        boolean inStr = false;
+        StringBuilder cur = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\'') { inStr = !inStr; cur.append(c); continue; }
+            if (!inStr) {
+                if (c == '(' || c == '[') depth++;
+                else if (c == ')' || c == ']') depth--;
+                else if (c == ',' && depth == 0) {
+                    if (maxParts > 0 && parts.size() >= maxParts - 1) {
+                        cur.append(c);
+                        continue;
+                    }
+                    parts.add(cur.toString().trim());
+                    cur = new StringBuilder();
+                    continue;
+                }
+            }
+            cur.append(c);
+        }
+        if (cur.length() > 0) parts.add(cur.toString().trim());
+        return parts;
+    }
+
+    /** Parsea una lista Prolog de ejercicio_info(...) y devuelve List<Map>. */
+    private List<Map<String, Object>> parsearListaEjercicioInfo(String listContent) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        int pos = 0;
+        while (pos < listContent.length()) {
+            int start = listContent.indexOf("ejercicio_info(", pos);
+            if (start == -1) break;
+            int innerStart = start + 15;
+            int end = findMatchingParen(listContent, innerStart);
+            String inner = listContent.substring(innerStart, end);
+            result.add(parsearEjercicioProlog(inner));
+            pos = end + 1;
+        }
+        return result;
+    }
+
+    /** Parsea una lista Prolog de grupo_ejercicios(...) y devuelve List<Map>. */
+    private List<Map<String, Object>> parsearListaGruposProlog(String listContent, String objetivo, String nivel) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        int pos = 0;
+        while (pos < listContent.length()) {
+            int start = listContent.indexOf("grupo_ejercicios(", pos);
+            if (start == -1) break;
+            int innerStart = start + 17;
+            int end = findMatchingParen(listContent, innerStart);
+            String inner = listContent.substring(innerStart, end);
+            result.add(parsearGrupoProlog(inner, objetivo, nivel));
+            pos = end + 1;
+        }
+        return result;
+    }
+
+    /**
+     * Parser: Convierte estructura Prolog [dia(1, ...), ...] a Map Java.
+     * Soporta tanto la estructura antigua [dia(N, [grupo_ejercicios...])]
+     * como la nueva [dia(N, sesion(EntradaCalor, [Movilidad...], [Principales...]))].
      */
     private Map<String, Object> parsearRutinaProlog(String prologOutput, String objetivo, String nivel) {
         Map<String, Object> resultado = new HashMap<>();
         List<Map<String, Object>> dias = new ArrayList<>();
-        
+
         try {
-            // Remove spaces y newlines para parsing más fácil
             String clean = prologOutput.trim();
             if (clean.startsWith("[") && clean.endsWith("]")) {
                 clean = clean.substring(1, clean.length() - 1);
             }
-            
-            // Parse: dia(1, [...]), dia(2, [...]), ...
-            // Simple parser: split by "dia(" y parsear cada uno
+
             int diaNum = 1;
             int pos = 0;
-            
             while (pos < clean.length()) {
                 int diaStart = clean.indexOf("dia(", pos);
                 if (diaStart == -1) break;
-                
-                // Encontrar el cierre del dia()
-                int parenCount = 0;
-                int endPos = diaStart + 4;
-                boolean inString = false;
-                
-                while (endPos < clean.length()) {
-                    char c = clean.charAt(endPos);
-                    if (c == '\'' || c == '"') inString = !inString;
-                    if (!inString) {
-                        if (c == '(') parenCount++;
-                        if (c == ')') {
-                            if (parenCount == 0) break;
-                            parenCount--;
-                        }
-                    }
-                    endPos++;
-                }
-                
-                if (endPos < clean.length()) {
-                    String diaContent = clean.substring(diaStart + 4, endPos);
-                    Map<String, Object> diaMap = parsearDiaProlog(diaNum, diaContent, objetivo, nivel);
-                    dias.add(diaMap);
-                    diaNum++;
-                    pos = endPos + 1;
-                } else {
-                    break;
-                }
+                int innerStart = diaStart + 4;
+                int end = findMatchingParen(clean, innerStart);
+                String diaContent = clean.substring(innerStart, end);
+                Map<String, Object> diaMap = parsearDiaProlog(diaNum, diaContent, objetivo, nivel);
+                dias.add(diaMap);
+                diaNum++;
+                pos = end + 1;
             }
-            
+
             resultado.put("dias", dias);
             resultado.put("numDias", dias.size());
             resultado.put("objetivo", objetivo);
             resultado.put("nivel", nivel);
-            
+
         } catch (Exception e) {
-            logger.error("  ❌ Error parseando Prolog: {}", e.getMessage(), e);
+            logger.error("Error parseando rutina Prolog: {}", e.getMessage(), e);
             resultado.put("success", false);
         }
-        
+
         return resultado;
     }
-    
+
     /**
-     * Parse estructura de un día: (1, [grupo_ejercicios(...), ...])
+     * Parsea el contenido interno de un dia(N, ...).
+     * Detecta automáticamente formato sesion/3 o lista plana de grupo_ejercicios.
      */
-    private Map<String, Object> parsearDiaProlog(Integer diaNum, String diaContent, 
-                                                   String objetivo, String nivel) {
+    private Map<String, Object> parsearDiaProlog(Integer diaNum, String diaContent,
+                                                  String objetivo, String nivel) {
         Map<String, Object> dia = new HashMap<>();
         List<Map<String, Object>> grupos = new ArrayList<>();
-        
+        Map<String, Object> entradaCalor = new HashMap<>();
+        List<Map<String, Object>> movilidadEj = new ArrayList<>();
+
         try {
-            // Format: "1, [grupo_ejercicios(...), ...]"
-            // Split por coma después del número
-            int commaPos = diaContent.indexOf(',');
-            if (commaPos > -1) {
-                String gruposContent = diaContent.substring(commaPos + 1).trim();
-                if (gruposContent.startsWith("[") && gruposContent.endsWith("]")) {
+            // Separar número de día del contenido
+            List<String> topParts = splitTopLevel(diaContent, 2);
+            if (topParts.size() < 2) { dia.put("numero", diaNum); dia.put("grupos", grupos); return dia; }
+
+            String remainder = topParts.get(1).trim();
+
+            if (remainder.startsWith("sesion(")) {
+                // Nueva estructura: sesion(EntradaCalor, [Movilidad...], [Principales...])
+                String sesionInner = remainder.substring(7); // elimina "sesion("
+                // Elimina el ')' de cierre del sesion
+                if (sesionInner.endsWith(")")) sesionInner = sesionInner.substring(0, sesionInner.length() - 1);
+
+                // Dividir los 3 argumentos de sesion a nivel superior
+                List<String> sesionArgs = splitTopLevel(sesionInner, 3);
+
+                // Arg 1: ejercicio_info(...) — entrada en calor
+                if (sesionArgs.size() > 0) {
+                    String a1 = sesionArgs.get(0).trim();
+                    if (a1.startsWith("ejercicio_info(")) {
+                        int iEnd = findMatchingParen(a1, 15);
+                        entradaCalor = parsearEjercicioProlog(a1.substring(15, iEnd));
+                    }
+                }
+                // Arg 2: [ejercicio_info(...), ...] — movilidad
+                if (sesionArgs.size() > 1) {
+                    String a2 = sesionArgs.get(1).trim();
+                    if (a2.startsWith("[") && a2.endsWith("]"))
+                        movilidadEj = parsearListaEjercicioInfo(a2.substring(1, a2.length() - 1));
+                }
+                // Arg 3: [grupo_ejercicios(...), ...] — principales
+                if (sesionArgs.size() > 2) {
+                    String a3 = sesionArgs.get(2).trim();
+                    if (a3.startsWith("[") && a3.endsWith("]"))
+                        grupos = parsearListaGruposProlog(a3.substring(1, a3.length() - 1), objetivo, nivel);
+                }
+
+            } else {
+                // Formato antiguo: [grupo_ejercicios(...), ...]
+                String gruposContent = remainder;
+                if (gruposContent.startsWith("[") && gruposContent.endsWith("]"))
                     gruposContent = gruposContent.substring(1, gruposContent.length() - 1);
-                }
-                
-                // Parse grupo_ejercicios(...), grupo_ejercicios(...), ...
-                int pos = 0;
-                while (pos < gruposContent.length()) {
-                    int grupoStart = gruposContent.indexOf("grupo_ejercicios(", pos);
-                    if (grupoStart == -1) break;
-                    
-                    // Encontrar cierre de grupo_ejercicios()
-                    int parenCount = 0;
-                    int endPos = grupoStart + 17;
-                    boolean inString = false;
-                    
-                    while (endPos < gruposContent.length()) {
-                        char c = gruposContent.charAt(endPos);
-                        if (c == '\'' || c == '"') inString = !inString;
-                        if (!inString) {
-                            if (c == '(') parenCount++;
-                            if (c == ')') {
-                                if (parenCount == 0) break;
-                                parenCount--;
-                            }
-                        }
-                        endPos++;
-                    }
-                    
-                    if (endPos < gruposContent.length()) {
-                        String grupoContent = gruposContent.substring(grupoStart + 17, endPos);
-                        Map<String, Object> grupoMap = parsearGrupoProlog(grupoContent, objetivo, nivel);
-                        grupos.add(grupoMap);
-                        pos = endPos + 1;
-                    } else {
-                        break;
-                    }
-                }
+                grupos = parsearListaGruposProlog(gruposContent, objetivo, nivel);
             }
-            
-            dia.put("numero", diaNum);
-            dia.put("grupos", grupos);
-            
+
         } catch (Exception e) {
-            logger.error("  ❌ Error parseando día {}: {}", diaNum, e.getMessage());
+            logger.error("Error parseando día {}: {}", diaNum, e.getMessage());
         }
-        
+
+        dia.put("numero", diaNum);
+        dia.put("grupos", grupos);
+        dia.put("entradaCalor", entradaCalor);
+        dia.put("movilidad", movilidadEj);
         return dia;
     }
-    
-    /**
-     * Parse estructura grupo: (PECHO, [ejercicio_info(...), ...])
-     */
+
+    /** Parse estructura grupo: (pecho, [ejercicio_info(...), ...]) */
     private Map<String, Object> parsearGrupoProlog(String grupoContent, String objetivo, String nivel) {
         Map<String, Object> grupo = new HashMap<>();
         List<Map<String, Object>> ejercicios = new ArrayList<>();
-        
         try {
-            // Format: "PECHO, [ejercicio_info(...), ...]"
-            int commaPos = grupoContent.indexOf(',');
-            if (commaPos > -1) {
-                String grupoNombre = grupoContent.substring(0, commaPos).trim();
-                String ejerciciosContent = grupoContent.substring(commaPos + 1).trim();
-                
-                if (ejerciciosContent.startsWith("[") && ejerciciosContent.endsWith("]")) {
-                    ejerciciosContent = ejerciciosContent.substring(1, ejerciciosContent.length() - 1);
-                }
-                
-                // Parse ejercicio_info(...), ejercicio_info(...), ...
-                int pos = 0;
-                while (pos < ejerciciosContent.length()) {
-                    int ejeStart = ejerciciosContent.indexOf("ejercicio_info(", pos);
-                    if (ejeStart == -1) break;
-                    
-                    int parenCount = 0;
-                    int endPos = ejeStart + 15;
-                    boolean inString = false;
-                    
-                    while (endPos < ejerciciosContent.length()) {
-                        char c = ejerciciosContent.charAt(endPos);
-                        if (c == '\'' || c == '"') inString = !inString;
-                        if (!inString) {
-                            if (c == '(') parenCount++;
-                            if (c == ')') {
-                                if (parenCount == 0) break;
-                                parenCount--;
-                            }
-                        }
-                        endPos++;
-                    }
-                    
-                    if (endPos < ejerciciosContent.length()) {
-                        String ejeContent = ejerciciosContent.substring(ejeStart + 15, endPos);
-                        Map<String, Object> ejeMap = parsearEjercicioProlog(ejeContent);
-                        ejercicios.add(ejeMap);
-                        pos = endPos + 1;
-                    } else {
-                        break;
-                    }
-                }
-                
-                grupo.put("nombre", grupoNombre);
-                grupo.put("ejercicios", ejercicios);
+            List<String> parts = splitTopLevel(grupoContent, 2);
+            if (parts.size() >= 2) {
+                grupo.put("nombre", parts.get(0).trim().replaceAll("'", ""));
+                String ejContent = parts.get(1).trim();
+                if (ejContent.startsWith("[") && ejContent.endsWith("]"))
+                    ejContent = ejContent.substring(1, ejContent.length() - 1);
+                ejercicios = parsearListaEjercicioInfo(ejContent);
             }
-            
         } catch (Exception e) {
-            logger.error("  ❌ Error parseando grupo: {}", e.getMessage());
+            logger.error("Error parseando grupo: {}", e.getMessage());
         }
-        
+        grupo.put("ejercicios", ejercicios);
         return grupo;
     }
-    
-    /**
-     * Parse estructura ejercicio: (1, 'Press banca', 4, 12, 60)
-     */
+
+    /** Parse ejercicio: (ex_001, 'Press Banca', 3, 10, 60) */
     private Map<String, Object> parsearEjercicioProlog(String ejeContent) {
         Map<String, Object> ejercicio = new HashMap<>();
-        
         try {
-            // Format: "ID, 'Nombre', Series, Reps, Descanso"
-            List<String> parts = new ArrayList<>();
-            int pos = 0;
-            StringBuilder current = new StringBuilder();
-            boolean inString = false;
-            
-            while (pos < ejeContent.length()) {
-                char c = ejeContent.charAt(pos);
-                if (c == '\'' || c == '"') {
-                    inString = !inString;
-                    current.append(c);
-                } else if (c == ',' && !inString) {
-                    parts.add(current.toString().trim());
-                    current = new StringBuilder();
-                } else {
-                    current.append(c);
-                }
-                pos++;
-            }
-            if (current.length() > 0) {
-                parts.add(current.toString().trim());
-            }
-            
+            List<String> parts = splitTopLevel(ejeContent, 5);
             if (parts.size() >= 5) {
-                String id = parts.get(0);
-                String nombre = parts.get(1).replaceAll("'|\"", "");
-                Integer series = Integer.parseInt(parts.get(2));
-                Integer reps = Integer.parseInt(parts.get(3));
-                Integer descanso = Integer.parseInt(parts.get(4));
-                
-                ejercicio.put("id", id);
-                ejercicio.put("nombre", nombre);
-                ejercicio.put("series", series);
-                ejercicio.put("reps", reps);
-                ejercicio.put("descanso", descanso);
+                ejercicio.put("id",       parts.get(0).trim());
+                ejercicio.put("nombre",   parts.get(1).trim().replaceAll("'", ""));
+                ejercicio.put("series",   Integer.parseInt(parts.get(2).trim()));
+                ejercicio.put("reps",     Integer.parseInt(parts.get(3).trim()));
+                ejercicio.put("descanso", Integer.parseInt(parts.get(4).trim().replaceAll("[^0-9]", "0").isEmpty() ? "0" : parts.get(4).trim().replaceAll("[^0-9]", "")));
             }
-            
         } catch (Exception e) {
-            logger.error("  ❌ Error parseando ejercicio: {}", e.getMessage());
+            logger.error("Error parseando ejercicio '{}': {}", ejeContent, e.getMessage());
         }
-        
         return ejercicio;
     }
-    
-    /**
-     * Determina división según número de días
-     */
-    private String determinarDivision(Integer diasDisponibles) {
-        if (diasDisponibles <= 3) {
-            return "Full Body";
-        } else if (diasDisponibles == 4) {
-            return "Torso-Pierna";
-        } else {
-            return "Push-Pull-Legs";
-        }
-    }
-    
+
     private static boolean isWindows() {
         return System.getProperty("os.name").toLowerCase().contains("win");
     }

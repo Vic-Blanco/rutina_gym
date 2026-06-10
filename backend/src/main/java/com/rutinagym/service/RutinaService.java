@@ -6,6 +6,8 @@ import com.rutinagym.model.DiaEntrenamiento;
 import com.rutinagym.model.Ejercicio;
 import com.rutinagym.model.Nivel;
 import com.rutinagym.model.GrupoMuscular;
+import com.rutinagym.model.TipoEjercicio;
+import com.rutinagym.model.Patron;
 import com.rutinagym.repository.RutinaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -169,8 +171,8 @@ public class RutinaService {
                     ejercicio.setDescansoSegundos(240);
                     break;
             }
-        } else if ("RESISTENCIA".equalsIgnoreCase(objetivo)) {
-            // Resistencia: alto reps, bajo descanso
+        } else if ("DEFINICION".equalsIgnoreCase(objetivo)) {
+            // Definición: alto reps, bajo descanso
             switch (nivel.toUpperCase()) {
                 case "INICIAL":
                     ejercicio.setSeries(2);
@@ -188,8 +190,8 @@ public class RutinaService {
                     ejercicio.setDescansoSegundos(30);
                     break;
             }
-        } else if ("ACONDICIONAMIENTO".equalsIgnoreCase(objetivo)) {
-            // Acondicionamiento: equilibrio
+        } else if ("HIBRIDO".equalsIgnoreCase(objetivo)) {
+            // Híbrido: equilibrio fuerza/resistencia
             switch (nivel.toUpperCase()) {
                 case "INICIAL":
                     ejercicio.setSeries(3);
@@ -371,7 +373,7 @@ public class RutinaService {
     }
     
     /**
-     * NUEVO: Genera rutina COMPLETAMENTE desde Prolog (generar_rutina_semanal)
+     * Genera rutina COMPLETAMENTE desde Prolog (generar_rutina_semanal)
      * Esta es ahora la fuente primaria de lógica de generación
      */
     public Rutina generarRutinaDesdeProlog(String nombre,
@@ -379,6 +381,19 @@ public class RutinaService {
                                           String nivel,
                                           Integer numDias,
                                           List<String> gruposObjectivo) {
+        return generarRutinaDesdeProlog(nombre, objetivo, nivel, numDias, gruposObjectivo, null);
+    }
+
+    /**
+     * Overload con tipoEntradaCalor explícito (para rutina personalizada).
+     * tipoEntradaCalor: cardio_ligero | movilidad_dinamica | activacion_muscular | null (auto).
+     */
+    public Rutina generarRutinaDesdeProlog(String nombre,
+                                          String objetivo,
+                                          String nivel,
+                                          Integer numDias,
+                                          List<String> gruposObjectivo,
+                                          String tipoEntradaCalor) {
         
         logger.info("🔮 INICIANDO GENERACIÓN DESDE PROLOG");
         
@@ -409,15 +424,15 @@ public class RutinaService {
         
         try {
             // 1. Llamar a Prolog para generar la rutina
-            // Usar usuario existente en KB Prolog: user1, user2, user3
-            String usuarioProlog = "user1"; // Usuario por defecto
-            
+            String usuarioProlog = "user1";
+
             Map<String, Object> rutinaProlog = prologService.generarRutinaCompletaDesdeProlog(
                 usuarioProlog,
                 objetivo,
                 nivel,
                 numDias,
-                gruposObjectivo
+                gruposObjectivo,
+                tipoEntradaCalor
             );
             
             if ((boolean) rutinaProlog.getOrDefault("success", false)) {
@@ -464,8 +479,9 @@ public class RutinaService {
     }
     
     /**
-     * Convierte estructura parseada de Prolog a objetos DiaEntrenamiento
-     * Input: Map con: {"dias": [...], "objetivo": "...", "nivel": "..."}
+     * Convierte estructura parseada de Prolog a objetos DiaEntrenamiento.
+     * Soporta nueva estructura sesion/3 (entradaCalor + movilidad + principales)
+     * y la antigua (solo grupos).
      */
     @SuppressWarnings("unchecked")
     private List<DiaEntrenamiento> convertirPrologADiasEntrenamiento(Map<String, Object> rutinaProlog,
@@ -473,63 +489,119 @@ public class RutinaService {
                                                                      String objetivo,
                                                                      String nivel) {
         List<DiaEntrenamiento> dias = new ArrayList<>();
-        
+
         try {
             List<Map<String, Object>> diasProlog = (List<Map<String, Object>>) rutinaProlog.get("dias");
-            
             if (diasProlog == null) {
-                logger.warn("⚠️  No se encontraron días en respuesta Prolog");
+                logger.warn("No se encontraron días en respuesta Prolog");
                 return dias;
             }
-            
+
             for (Map<String, Object> diaProlog : diasProlog) {
                 Integer numDia = (Integer) diaProlog.get("numero");
-                List<Map<String, Object>> gruposProlog = (List<Map<String, Object>>) diaProlog.get("grupos");
-                
                 DiaEntrenamiento dia = new DiaEntrenamiento();
                 dia.setRutina(rutina);
                 dia.setNumeroDia(numDia);
                 dia.setDescripcion("Día " + numDia + " (desde Prolog)");
-                
+
                 List<Ejercicio> ejercicios = new ArrayList<>();
-                
+
+                // --- Entrada en calor (1 ejercicio) ---
+                Map<String, Object> calor = (Map<String, Object>) diaProlog.get("entradaCalor");
+                if (calor != null && !calor.isEmpty()) {
+                    Ejercicio ej = crearEjercicioDesdePrologMap(calor, GrupoMuscular.CARDIO,
+                            TipoEjercicio.COMPUESTO, Patron.GENERAL, nivel, dia);
+                    if (ej != null) ejercicios.add(ej);
+                }
+
+                // --- Movilidad (2-3 ejercicios) ---
+                List<Map<String, Object>> movList = (List<Map<String, Object>>) diaProlog.get("movilidad");
+                if (movList != null) {
+                    for (Map<String, Object> movEj : movList) {
+                        Ejercicio ej = crearEjercicioDesdePrologMap(movEj, GrupoMuscular.MOVILIDAD,
+                                TipoEjercicio.AISLADO, Patron.MOVILIDAD, nivel, dia);
+                        if (ej != null) ejercicios.add(ej);
+                    }
+                }
+
+                // --- Ejercicios principales ---
+                List<Map<String, Object>> gruposProlog = (List<Map<String, Object>>) diaProlog.get("grupos");
                 if (gruposProlog != null) {
                     for (Map<String, Object> grupoProlog : gruposProlog) {
                         String grupoNombre = (String) grupoProlog.get("nombre");
-                        List<Map<String, Object>> ejerciciosProlog = (List<Map<String, Object>>) grupoProlog.get("ejercicios");
-                        
-                        if (ejerciciosProlog != null) {
-                            for (Map<String, Object> ejeProlog : ejerciciosProlog) {
-                                Ejercicio ejercicio = new Ejercicio();
-                                ejercicio.setNombre((String) ejeProlog.get("nombre"));
-                                ejercicio.setGrupoMuscular(GrupoMuscular.valueOf(grupoNombre.toUpperCase()));
-                                ejercicio.setNivelDificultadMinima(Nivel.valueOf(nivel.toUpperCase()));
-                                ejercicio.setDiaEntrenamiento(dia);
-                                
-                                // Usar series/reps/descanso desde Prolog
-                                ejercicio.setSeries(((Number) ejeProlog.get("series")).intValue());
-                                ejercicio.setRepeticiones(((Number) ejeProlog.get("reps")).intValue());
-                                ejercicio.setDescansoSegundos(((Number) ejeProlog.get("descanso")).intValue());
-                                
-                                ejercicios.add(ejercicio);
+                        GrupoMuscular grupoEnum = resolverGrupoMuscular(grupoNombre);
+                        List<Map<String, Object>> ejsProlog = (List<Map<String, Object>>) grupoProlog.get("ejercicios");
+                        if (ejsProlog != null) {
+                            for (Map<String, Object> ejeProlog : ejsProlog) {
+                                Ejercicio ej = crearEjercicioDesdePrologMap(ejeProlog, grupoEnum,
+                                        TipoEjercicio.COMPUESTO, Patron.EMPUJE, nivel, dia);
+                                if (ej != null) ejercicios.add(ej);
                             }
                         }
                     }
                 }
-                
+
                 dia.setEjercicios(ejercicios);
                 dias.add(dia);
             }
-            
-            logger.info("✅ Convertidos {} días desde Prolog", dias.size());
-            
+
+            logger.info("Convertidos {} días desde Prolog", dias.size());
+
         } catch (Exception e) {
-            logger.error("❌ Error convirtiendo Prolog: {}", e.getMessage(), e);
+            logger.error("Error convirtiendo Prolog: {}", e.getMessage(), e);
         }
-        
+
         return dias;
     }
-    
+
+    /** Crea un Ejercicio a partir del mapa parseado de un ejercicio_info Prolog. */
+    private Ejercicio crearEjercicioDesdePrologMap(Map<String, Object> ejeMap,
+                                                   GrupoMuscular grupo,
+                                                   TipoEjercicio tipo,
+                                                   Patron patron,
+                                                   String nivel,
+                                                   DiaEntrenamiento dia) {
+        if (ejeMap == null || ejeMap.get("nombre") == null) return null;
+        Ejercicio ej = new Ejercicio();
+        ej.setNombre((String) ejeMap.get("nombre"));
+        ej.setGrupoMuscular(grupo);
+        ej.setTipo(tipo);
+        ej.setPatron(patron);
+        ej.setNivelDificultadMinima(resolverNivel(nivel));
+        ej.setSeries(((Number) ejeMap.getOrDefault("series", 3)).intValue());
+        ej.setRepeticiones(((Number) ejeMap.getOrDefault("reps", 10)).intValue());
+        ej.setDescansoSegundos(((Number) ejeMap.getOrDefault("descanso", 60)).intValue());
+        ej.setDiaEntrenamiento(dia);
+        return ej;
+    }
+
+    /** Resuelve GrupoMuscular desde string Prolog; fallback a CORE si desconocido. */
+    private GrupoMuscular resolverGrupoMuscular(String nombre) {
+        if (nombre == null) return GrupoMuscular.CORE;
+        try {
+            return GrupoMuscular.valueOf(nombre.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // Mapeos adicionales Prolog → Java
+            return switch (nombre.toLowerCase()) {
+                case "movilidad"  -> GrupoMuscular.MOVILIDAD;
+                case "activacion" -> GrupoMuscular.ACTIVACION;
+                case "cardio"     -> GrupoMuscular.CARDIO;
+                case "antebrazo"  -> GrupoMuscular.ANTEBRAZO;
+                default           -> GrupoMuscular.CORE;
+            };
+        }
+    }
+
+    /** Resuelve Nivel desde string Java; fallback a INICIAL. */
+    private Nivel resolverNivel(String nivel) {
+        if (nivel == null) return Nivel.INICIAL;
+        try {
+            return Nivel.valueOf(nivel.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Nivel.INICIAL;
+        }
+    }
+
     /**
      * Elimina una rutina
      */

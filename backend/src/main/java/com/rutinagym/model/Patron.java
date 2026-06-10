@@ -6,7 +6,10 @@ package com.rutinagym.model;
 public enum Patron {
     EMPUJE("Empuje - Movimiento de empuje horizontal o vertical"),
     TIRON("Tirón - Movimiento de tracción hacia el cuerpo"),
-    ESTATICO("Estático - Contracción isométrica");
+    ESTATICO("Estático - Contracción isométrica"),
+    GENERAL("General - Patrón cardiovascular o multi-patrón"),
+    MOVILIDAD("Movilidad - Mejora de rango articular"),
+    ACTIVACION("Activación - Preparación muscular previa al entrenamiento");
     
     private final String display;
     

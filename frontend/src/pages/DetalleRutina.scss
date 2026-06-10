@@ -385,6 +385,145 @@
       font-size: 1.5rem;
       font-weight: 700;
     }
+
+    .dia-card {
+      background: #FFFFFF;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+
+      .dia-card-header {
+        background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+        color: #FFD700;
+        padding: 18px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h3 {
+          font-size: 1.3rem;
+          margin: 0;
+          font-weight: 700;
+        }
+
+        .dia-desc {
+          font-size: 0.85rem;
+          color: rgba(255, 215, 0, 0.75);
+        }
+      }
+
+      .ejercicios-bloque {
+        padding: 18px 24px;
+        border-bottom: 1px solid #F0F0F0;
+
+        &:last-child { border-bottom: none; }
+
+        h4 {
+          font-size: 1rem;
+          font-weight: 700;
+          margin: 0 0 12px 0;
+          padding-bottom: 8px;
+          border-bottom: 2px solid;
+        }
+
+        .ejercicio-item {
+          background: #F5F5F5;
+          padding: 12px 15px;
+          border-radius: 8px;
+          margin-bottom: 10px;
+          border-left: 4px solid;
+          transition: background 0.2s ease, box-shadow 0.2s ease;
+
+          &:last-child { margin-bottom: 0; }
+
+          &:hover {
+            background: #FFFAF0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          }
+
+          .ejercicio-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+
+            .ejercicio-imagen {
+              width: 60px;
+              height: 60px;
+              border-radius: 8px;
+              border: 2px solid;
+              object-fit: contain;
+              padding: 4px;
+              flex-shrink: 0;
+              background: #FFF;
+            }
+
+            .ejercicio-info {
+              flex: 1;
+              h4 {
+                color: #000;
+                margin: 0 0 4px 0;
+                font-size: 1rem;
+                font-weight: 600;
+                border-bottom: none;
+                padding-bottom: 0;
+              }
+              .ejercicio-detalles {
+                color: #666;
+                font-size: 0.8rem;
+                margin: 0;
+              }
+            }
+          }
+
+          .ejercicio-parametros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+
+            .param-badge {
+              background: #FFFFFF;
+              border: 1px solid #CCCCCC;
+              padding: 4px 10px;
+              border-radius: 12px;
+              font-size: 0.8rem;
+              font-weight: 600;
+              color: #333;
+            }
+          }
+        }
+
+        // Calor — naranja
+        &.bloque-calor {
+          background: #FFF8F0;
+          h4 { color: #E65100; border-color: #FF9800; }
+          .ejercicio-item.ej-calor {
+            border-color: #FF9800;
+            .ejercicio-imagen { border-color: #FF9800; }
+          }
+        }
+
+        // Movilidad — azul-gris
+        &.bloque-movilidad {
+          background: #F3F8FF;
+          h4 { color: #1565C0; border-color: #42A5F5; }
+          .ejercicio-item.ej-movilidad {
+            border-color: #42A5F5;
+            .ejercicio-imagen { border-color: #42A5F5; }
+          }
+        }
+
+        // Principales — amarillo marca
+        &.bloque-principales {
+          h4 { color: #1a1a1a; border-color: #FFD700; }
+          .ejercicio-item.ej-principal {
+            border-color: #FFD700;
+            .ejercicio-imagen { border-color: #FFD700; }
+          }
+        }
+      }
+    }
   }
 
   // ESTADÍSTICAS SECTION

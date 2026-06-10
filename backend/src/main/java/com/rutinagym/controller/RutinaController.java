@@ -59,7 +59,7 @@ public class RutinaController {
                 com.rutinagym.model.Objetivo.valueOf(objetivoStr);
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest()
-                    .body("Objetivo no válido. Opciones: HIPERTROFIA, FUERZA, RESISTENCIA, ACONDICIONAMIENTO");
+                    .body("Objetivo no válido. Opciones: HIPERTROFIA, FUERZA, DEFINICION, HIBRIDO");
             }
             
             // Validar que el nivel sea válido
@@ -108,7 +108,8 @@ public class RutinaController {
                 objetivoStr,
                 nivelStr,
                 request.getDiasDisponibles(),
-                grupos
+                grupos,
+                request.getTipoEntradaCalor()
             );
             
             // Verificar si la rutina fue generada exitosamente
@@ -313,7 +314,7 @@ public class RutinaController {
             info.put("estado", "operativo");
             
             Map<String, Object> capacidades = new HashMap<>();
-            capacidades.put("objetivos", Arrays.asList("HIPERTROFIA", "FUERZA", "RESISTENCIA", "ACONDICIONAMIENTO"));
+            capacidades.put("objetivos", Arrays.asList("HIPERTROFIA", "FUERZA", "DEFINICION", "HIBRIDO"));
             capacidades.put("niveles", Arrays.asList("INICIAL", "INTERMEDIO", "AVANZADO"));
             capacidades.put("diasDisponibles", Arrays.asList(2, 3, 4, 5, 6));
             capacidades.put("gruposMusculares", Arrays.asList(

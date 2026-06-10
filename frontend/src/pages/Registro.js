@@ -20,7 +20,7 @@ function Registro({ onRegister }) {
   const navigate = useNavigate();
 
   const niveles = ['INICIAL', 'INTERMEDIO', 'AVANZADO'];
-  const objetivos = ['HIPERTROFIA', 'FUERZA', 'RESISTENCIA', 'ACONDICIONAMIENTO'];
+  const objetivos = ['HIPERTROFIA', 'FUERZA', 'DEFINICION', 'HIBRIDO'];
   const gruposMusculares = [
     'PECHO', 'ESPALDA', 'HOMBROS', 'BICEPS', 'TRICEPS', 'ANTEBRAZO',
     'CUADRICEPS', 'ISQUIOTIBIAL', 'GLUTEOS', 'PANTORRILLA', 'CORE', 'CARDIO'

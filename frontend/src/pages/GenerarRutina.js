@@ -19,8 +19,8 @@ function GenerarRutina({ onRutinaGenerada }) {
   const objetivos = [
     { value: 'HIPERTROFIA', label: 'Hipertrofia - Ganar masa muscular' },
     { value: 'FUERZA', label: 'Fuerza - Aumentar capacidad de levantamiento' },
-    { value: 'RESISTENCIA', label: 'Resistencia - Mejorar capacidad aeróbica' },
-    { value: 'ACONDICIONAMIENTO', label: 'Acondicionamiento - Fitness general' },
+    { value: 'DEFINICION', label: 'Definición - Reducir grasa y marcar músculo' },
+    { value: 'HIBRIDO', label: 'Híbrido - Mezcla de fuerza y resistencia' },
   ];
 
   const gruposMusculares = [

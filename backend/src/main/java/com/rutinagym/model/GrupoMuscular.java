@@ -17,7 +17,9 @@ public enum GrupoMuscular {
     PIERNAS("Piernas"),
     CORE("Core"),
     CARDIO("Cardio"),
-    FLEXIBILIDAD("Flexibilidad");
+    MOVILIDAD("Movilidad"),
+    ACTIVACION("Activación"),
+    FLEXIBILIDAD("Flexibilidad"); // alias legacy
     
     private final String display;
     

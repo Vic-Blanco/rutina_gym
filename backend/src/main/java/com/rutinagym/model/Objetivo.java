@@ -8,8 +8,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public enum Objetivo {
     HIPERTROFIA("Hipertrofia - Ganar masa muscular"),
     FUERZA("Fuerza - Aumentar capacidad de levantamiento"),
-    RESISTENCIA("Resistencia - Mejorar capacidad aeróbica"),
-    ACONDICIONAMIENTO("Acondicionamiento - Fitness general");
+    DEFINICION("Definición - Reducir grasa y marcar músculo"),
+    HIBRIDO("Híbrido - Mezcla de fuerza y resistencia");
     
     private final String display;
     

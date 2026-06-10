@@ -9,10 +9,14 @@ public class GenerarRutinaRequest {
     private Integer diasDisponibles;
     private List<String> gruposMusculares;
     private String grupoPrioritario;
-    
+    /** Tipo de entrada en calor para rutina personalizada.
+     *  Valores Prolog: cardio_ligero | movilidad_dinamica | activacion_muscular
+     *  Null/vacío = selección automática. */
+    private String tipoEntradaCalor;
+
     public GenerarRutinaRequest() {}
-    
-    public GenerarRutinaRequest(String nombre, String objetivo, String nivel, Integer diasDisponibles, 
+
+    public GenerarRutinaRequest(String nombre, String objetivo, String nivel, Integer diasDisponibles,
                                 List<String> gruposMusculares, String grupoPrioritario) {
         this.nombre = nombre;
         this.objetivo = objetivo;
@@ -65,8 +69,16 @@ public class GenerarRutinaRequest {
     public String getGrupoPrioritario() {
         return grupoPrioritario;
     }
-    
+
     public void setGrupoPrioritario(String grupoPrioritario) {
         this.grupoPrioritario = grupoPrioritario;
+    }
+
+    public String getTipoEntradaCalor() {
+        return tipoEntradaCalor;
+    }
+
+    public void setTipoEntradaCalor(String tipoEntradaCalor) {
+        this.tipoEntradaCalor = tipoEntradaCalor;
     }
 }
