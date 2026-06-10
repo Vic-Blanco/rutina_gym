@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <circle cx="50" cy="50" r="48" fill="#f5f5f5" stroke="#FFD700" stroke-width="2"/>
+  <!-- Heart shape for cardio -->
+  <path d="M 50 65 C 35 50 25 40 25 32 C 25 20 35 15 42 15 C 47 15 50 20 50 20 C 50 20 53 15 58 15 C 65 15 75 20 75 32 C 75 40 65 50 50 65 Z" 
+        fill="none" stroke="#FF6B6B" stroke-width="2" stroke-linejoin="miter"/>
+  <!-- Pulse line -->
+  <path d="M 20 30 L 30 30 L 35 20 L 40 35 L 45 30 L 80 30" fill="none" stroke="#FF6B6B" stroke-width="1.5" opacity="0.6"/>
+</svg>

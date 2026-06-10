@@ -1,0 +1,146 @@
+.App {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #1a1a1a;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background-color: #FFD700;
+  color: #000;
+  
+  &:hover {
+    background-color: #FFC107;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+  
+  &:disabled {
+    background-color: #CCCCCC;
+    color: #666;
+    cursor: not-allowed;
+  }
+}
+
+input, select, textarea {
+  padding: 10px 15px;
+  border: 2px solid #999;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #FFFFFF;
+  color: #000;
+  transition: border-color 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  }
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.btn-primary {
+  background-color: #667eea;
+  color: white;
+  
+  &:hover {
+    background-color: #5568d3;
+  }
+}
+
+.btn-secondary {
+  background-color: #764ba2;
+  color: white;
+  
+  &:hover {
+    background-color: #63408b;
+  }
+}
+
+.btn-danger {
+  background-color: #f56565;
+  color: white;
+  
+  &:hover {
+    background-color: #e53e3e;
+  }
+}
+
+.btn-success {
+  background-color: #48bb78;
+  color: white;
+  
+  &:hover {
+    background-color: #38a169;
+  }
+}
+
+.error {
+  color: #f56565;
+  background: #fed7d7;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border-left: 4px solid #f56565;
+}
+
+.success {
+  color: #22543d;
+  background: #c6f6d5;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border-left: 4px solid #48bb78;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  
+  span {
+    font-size: 1.5rem;
+    color: white;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

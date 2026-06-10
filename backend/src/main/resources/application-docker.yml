@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: rutina-gym-api
+  
+  datasource:
+    url: jdbc:h2:mem:rutina_gym_db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  
+  h2:
+    console:
+      enabled: false
+  
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: 8080
+
+# Configuración de Prolog para Docker
+prolog:
+  path: /app/prolog
+  timeout: 30
+
+logging:
+  level:
+    com.rutinagym: DEBUG
+    org.springframework.web: INFO

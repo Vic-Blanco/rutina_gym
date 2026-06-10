@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rutina_gym_api
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_PROLOG_PATH: /app/prolog
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./prolog:/app/prolog:ro
+    networks:
+      - rutina-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/usuarios"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rutina_gym_web
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:8080/api
+    depends_on:
+      - backend
+    networks:
+      - rutina-network
+
+networks:
+  rutina-network:
+    driver: bridge
