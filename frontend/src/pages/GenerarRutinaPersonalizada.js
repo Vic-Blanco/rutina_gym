@@ -52,7 +52,6 @@ function GenerarRutinaPersonalizada() {
     { id: 'GLUTEOS', label: '🍑 Glúteos', icon: '⭕' },
     { id: 'PANTORRILLA', label: '🦶 Pantorrilla', icon: '📍' },
     { id: 'CORE', label: '🎯 Core', icon: '⭐' },
-    { id: 'CARDIO', label: '❤️ Cardio', icon: '🏃‍♂️' },
   ];
 
   const toggleGrupo = (grupoId) => {
@@ -243,37 +242,7 @@ function GenerarRutinaPersonalizada() {
             )}
           </div>
 
-          {/* DISTRIBUCIÓN AUTOMÁTICA */}
-          {gruposSeleccionados > 0 && (
-            <div className="distribucion-preview">
-              <h3>📊 Vista Previa de Distribución</h3>
-              <div className="preview-content">
-                <p>El sistema distribuirá automáticamente tus <strong>{gruposSeleccionados} grupo{gruposSeleccionados !== 1 ? 's' : ''}</strong> en <strong>{formData.diasDisponibles} día{formData.diasDisponibles !== 1 ? 's' : ''}</strong></p>
-                <div className="distribution-example">
-                  {formData.gruposMusculares.length > 0 && (
-                    <>
-                      {Array.from({ length: formData.diasDisponibles }).map((_, day) => (
-                        <div key={day} className="day-preview">
-                          <strong>Día {day + 1}</strong>
-                          <p className="grupos-list">
-                            {gruposMusculares
-                              .filter(g => formData.gruposMusculares.includes(g.id))
-                              .slice(
-                                Math.floor((day / formData.diasDisponibles) * gruposSeleccionados),
-                                Math.ceil(((day + 1) / formData.diasDisponibles) * gruposSeleccionados)
-                              )
-                              .map(g => g.label.split(' ')[1])
-                              .join(' + ') || '-'
-                            }
-                          </p>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          
 
           {/* ENTRADA EN CALOR */}
           <div className="form-section">

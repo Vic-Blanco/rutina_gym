@@ -8,7 +8,6 @@ import com.rutinagym.model.Nivel;
 import com.rutinagym.model.GrupoMuscular;
 import com.rutinagym.model.TipoEjercicio;
 import com.rutinagym.model.Patron;
-import com.rutinagym.repository.RutinaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -23,9 +22,6 @@ import java.util.*;
 public class RutinaService {
     
     private static final Logger logger = LoggerFactory.getLogger(RutinaService.class);
-    
-    @Autowired
-    private RutinaRepository rutinaRepository;
     
     @Autowired
     private PrologService prologService;
@@ -72,7 +68,7 @@ public class RutinaService {
         }
         
         rutina.setDiasEntrenamiento(dias);
-        return rutinaRepository.save(rutina);
+        return rutina;
     }
     
     /**
@@ -310,20 +306,6 @@ public class RutinaService {
     }
     
     /**
-     * Obtiene todas las rutinas de un usuario
-     */
-    public List<Rutina> obtenerRutinasUsuario(Long usuarioId) {
-        return rutinaRepository.findByUsuarioId(usuarioId);
-    }
-    
-    /**
-     * Obtiene una rutina específica
-     */
-    public Optional<Rutina> obtenerRutina(Long rutinaId) {
-        return rutinaRepository.findById(rutinaId);
-    }
-    
-    /**
      * Genera una rutina temporal (sin guardar en BD, sin usuario)
      * Para uso sin autenticación
      */
@@ -502,7 +484,7 @@ public class RutinaService {
                 DiaEntrenamiento dia = new DiaEntrenamiento();
                 dia.setRutina(rutina);
                 dia.setNumeroDia(numDia);
-                dia.setDescripcion("Día " + numDia + " (desde Prolog)");
+                dia.setDescripcion("Día " + numDia);
 
                 List<Ejercicio> ejercicios = new ArrayList<>();
 
@@ -602,10 +584,5 @@ public class RutinaService {
         }
     }
 
-    /**
-     * Elimina una rutina
-     */
-    public void eliminarRutina(Long rutinaId) {
-        rutinaRepository.deleteById(rutinaId);
-    }
+   
 }

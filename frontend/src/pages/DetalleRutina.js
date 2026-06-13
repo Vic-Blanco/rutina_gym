@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiDownload } from 'react-icons/fi';
-import { obtenerRutina, validarRutina } from '../api/api';
+import { obtenerRutina } from '../api/api';
 import { getExerciseImage } from '../utils/exerciseImages';
 import './DetalleRutina.scss';
 
@@ -11,27 +11,10 @@ function DetalleRutina() {
   const [rutina, setRutina] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [validacion, setValidacion] = useState(null);
 
   useEffect(() => {
     cargarRutina();
   }, [rutinaId]);
-
-  // Validar rutina cuando se carga
-  useEffect(() => {
-    if (rutina) {
-      validarRutinaInteligente();
-    }
-  }, [rutina]);
-
-  const validarRutinaInteligente = async () => {
-    try {
-      const response = await validarRutina(rutina);
-      setValidacion(response.data);
-    } catch (err) {
-      console.log('No se pudo validar la rutina');
-    }
-  };
 
   const cargarRutina = async () => {
     try {
@@ -107,96 +90,14 @@ function DetalleRutina() {
           )}
         </div>
 
-        {/* SECCIÓN: VALIDACIONES */}
-        {rutina.validaciones && (
-          <div className="validaciones-section">
-            <h2>✅ Validaciones del Sistema Experto</h2>
-            <div className="validaciones-grid">
-              {typeof rutina.validaciones === 'object' && Object.entries(rutina.validaciones).map(([key, value]) => (
-                <div key={key} className={`validacion-card ${value ? 'pass' : 'fail'}`}>
-                  <div className="validacion-icon">{value ? '✓' : '✗'}</div>
-                  <div className="validacion-label">{key}</div>
-                </div>
-              ))}
-            </div>
+        {/* AVISO: RUTINA ORIENTATIVA */}
+        <div className="aviso-orientativo">
+          <span className="aviso-icono">⚠️</span>
+          <div className="aviso-texto">
+            <strong>Rutina orientativa</strong>
+            <p>Esta rutina es totalmente genérica y tiene carácter orientativo. Consulta siempre con un profesional del deporte o un médico antes de comenzar cualquier programa de entrenamiento.</p>
           </div>
-        )}
-
-        {/* SECCIÓN: ANÁLISIS INTELIGENTE DE RUTINA */}
-        {validacion && (
-          <div className="validacion-inteligente-section">
-            <h2>🔍 Análisis Inteligente del Sistema Experto</h2>
-            <div className="validacion-status">
-              <span className={`status-badge ${validacion.valida ? 'valida' : 'invalida'}`}>
-                {validacion.valida ? '✓ Rutina Válida' : '✗ Problemas Detectados'}
-              </span>
-            </div>
-
-            {validacion.errores && validacion.errores.length > 0 && (
-              <div className="errores-box">
-                <h3>❌ Errores:</h3>
-                <ul>
-                  {validacion.errores.map((err, idx) => (
-                    <li key={idx}>{err}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {validacion.advertencias && validacion.advertencias.length > 0 && (
-              <div className="advertencias-box">
-                <h3>⚠️ Advertencias:</h3>
-                <ul>
-                  {validacion.advertencias.map((adv, idx) => (
-                    <li key={idx}>{adv}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {validacion.estadisticas && (
-              <div className="estadisticas-box">
-                <h3>📊 Estadísticas:</h3>
-                <div className="estadisticas-grid">
-                  <div className="stat-item">
-                    <span className="stat-label">Total de Días</span>
-                    <span className="stat-value">{validacion.estadisticas.totalDias}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Total Ejercicios</span>
-                    <span className="stat-value">{validacion.estadisticas.totalEjercicios}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Promedio por Día</span>
-                    <span className="stat-value">{validacion.estadisticas.promedioPorDia.toFixed(1)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* SECCIÓN: EXPLICACIÓN DEL SISTEMA EXPERTO */}
-        {rutina.explicacion && (
-          <div className="explicacion-section">
-            <h2>🧠 Explicación del Sistema Experto</h2>
-            <div className="explicacion-content">
-              {rutina.explicacion}
-            </div>
-          </div>
-        )}
-
-        {/* SECCIÓN: RECOMENDACIONES */}
-        {rutina.recomendaciones && rutina.recomendaciones.length > 0 && (
-          <div className="recomendaciones-section">
-            <h2>💡 Recomendaciones Personalizadas</h2>
-            <ul className="recomendaciones-list">
-              {rutina.recomendaciones.map((rec, idx) => (
-                <li key={idx}>{rec}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        </div>
 
         {/* SECCIÓN: DÍAS DE ENTRENAMIENTO */}
         {rutina.diasEntrenamiento && rutina.diasEntrenamiento.length > 0 && (
@@ -207,6 +108,14 @@ function DetalleRutina() {
               const entradaCalor = ejercicios.filter(e => e.grupoMuscular === 'CARDIO');
               const movilidad   = ejercicios.filter(e => e.grupoMuscular === 'MOVILIDAD' || e.grupoMuscular === 'ACTIVACION');
               const principales = ejercicios.filter(e => e.grupoMuscular !== 'CARDIO' && e.grupoMuscular !== 'MOVILIDAD' && e.grupoMuscular !== 'ACTIVACION');
+
+              // Agrupar principales por grupoMuscular (como devuelve Prolog: grupo_ejercicios/2)
+              const principalesPorGrupo = principales.reduce((acc, ej) => {
+                const grupo = ej.grupoMuscular || 'OTROS';
+                if (!acc[grupo]) acc[grupo] = [];
+                acc[grupo].push(ej);
+                return acc;
+              }, {});
 
               const renderEjercicios = (lista, colorClass) =>
                 lista.map((ej, ejIdx) => (
@@ -221,7 +130,7 @@ function DetalleRutina() {
                       <div className="ejercicio-info">
                         <h4>{ej.nombre}</h4>
                         <p className="ejercicio-detalles">
-                          {ej.grupoMuscular} | {ej.tipo} | {ej.patron}
+                          {ej.tipo} | {ej.patron}
                         </p>
                       </div>
                     </div>
@@ -231,18 +140,23 @@ function DetalleRutina() {
                           {ej.series} × {ej.repeticiones} reps
                         </span>
                       )}
-                      {ej.descansoSegundos && (
+                      {ej.descansoSegundos > 0 && (
                         <span className="param-badge">⏱️ {ej.descansoSegundos}s</span>
                       )}
                     </div>
                   </div>
                 ));
 
+              // Grupos del día desde los grupos musculares del dia o desde los ejercicios principales
+              const gruposDia = dia.gruposMusculares && dia.gruposMusculares.length > 0
+                ? dia.gruposMusculares.join(' · ')
+                : Object.keys(principalesPorGrupo).join(' · ');
+
               return (
                 <div key={idx} className="dia-card">
                   <div className="dia-card-header">
                     <h3>Día {dia.numeroDia}</h3>
-                    {dia.descripcion && <span className="dia-desc">{dia.descripcion}</span>}
+                    {gruposDia && <span className="dia-desc">{gruposDia}</span>}
                   </div>
 
                   {entradaCalor.length > 0 && (
@@ -259,10 +173,15 @@ function DetalleRutina() {
                     </div>
                   )}
 
-                  {principales.length > 0 && (
+                  {Object.keys(principalesPorGrupo).length > 0 && (
                     <div className="ejercicios-bloque bloque-principales">
                       <h4>💪 Ejercicios Principales</h4>
-                      {renderEjercicios(principales, 'ej-principal')}
+                      {Object.entries(principalesPorGrupo).map(([grupo, ejsGrupo]) => (
+                        <div key={grupo} className="grupo-muscular-bloque">
+                          <span className="grupo-muscular-label">{grupo}</span>
+                          {renderEjercicios(ejsGrupo, 'ej-principal')}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

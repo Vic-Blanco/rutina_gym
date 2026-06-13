@@ -8,14 +8,7 @@ spring:
     username: sa
     password: 
   
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
+
   
   h2:
     console:

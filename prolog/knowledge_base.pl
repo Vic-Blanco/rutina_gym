@@ -18,8 +18,8 @@ usuario(user3, 'Carlos', avanzado, definicion, 6, [pecho, espalda, hombros, bice
 % =====================================================
 % objetivo(Objetivo, RangoRepMin, RangoRepMax, SeriesRecomendadas, DescansoMinutos, Intensidad)
 
-objetivo(hipertrofia, 8, 12, 3, 60, 'media-alta').
-objetivo(fuerza, 3, 6, 5, 180, 'muy-alta').
+objetivo(fuerza, 8, 12, 4, 90, 'media-alta').
+objetivo(hipertrofia, 5, 8, 3, 180, 'muy-alta').
 objetivo(definicion, 15, 20, 2, 30, 'media').
 objetivo(hibrido, 10, 15, 3, 45, 'media').
 % Aliases para compatibilidad con el enum Objetivo de Java
@@ -35,18 +35,23 @@ nivel(principiante, 'Menos de 6 meses de entrenamiento').
 nivel(intermedio, 'Entre 6 meses y 2 años de entrenamiento').
 nivel(avanzado, 'Más de 2 años de entrenamiento').
 
-% compatibilidad_ejercicio(Ejercicio, NivelMinimo)
-% Especifica el nivel mínimo requerido para realizar un ejercicio
 
-compatibilidad_ejercicio('Flexiones Pared', principiante).
-compatibilidad_ejercicio('Press Banca', intermedio).
-compatibilidad_ejercicio('Peso Muerto', intermedio).
-compatibilidad_ejercicio('Press Banca Larguero', avanzado).
-compatibilidad_ejercicio('Sentadilla con Barra', avanzado).
 
 % =====================================================
 % 4. DEFINICIÓN DE GRUPOS MUSCULARES
 % =====================================================
+% grupo_muscular(Nombre)
+
+grupo_muscular(pecho).
+grupo_muscular(espalda).
+grupo_muscular(hombros).
+grupo_muscular(biceps).
+grupo_muscular(triceps).
+grupo_muscular(cuadriceps).
+grupo_muscular(isquiotibial).
+grupo_muscular(gluteos).
+grupo_muscular(core).
+
 % grupo_muscular(Nombre, Clasificacion, EsSecundario)
 
 grupo_muscular(pecho, empuje, principal).
@@ -970,24 +975,6 @@ recuperacion(core, 24).
 recuperacion(antebrazo, 48).
 
 % =====================================================
-% 14. HISTORIAL DE USUARIO
-% =====================================================
-% historial_rutina(UsuarioID, RutinaID, FechaInicio, FechaFin, Estado)
-% Estado: activa, completada, cancelada
-
-historial_rutina(user1, rutina_001, '2024-01-01', '2024-03-31', completada).
-historial_rutina(user1, rutina_002, '2024-04-01', null, activa).
-
-% =====================================================
-% 15. HISTORIAL DE EJERCICIOS REALIZADOS
-% =====================================================
-% ejercicio_realizado(UsuarioID, EjercicioID, Fecha, Series, Reps, Peso)
-
-ejercicio_realizado(user1, ex_001, '2024-01-10', 3, 10, 80).
-ejercicio_realizado(user1, ex_001, '2024-01-15', 3, 11, 85).
-ejercicio_realizado(user1, ex_001, '2024-01-20', 3, 12, 85).
-
-% =====================================================
 % 16. PATRONES DE MOVIMIENTO
 % =====================================================
 % patron(Nombre, Descripcion)
@@ -1839,3 +1826,82 @@ tiempo_ejercicio_estimado(ex_965, 3).   % Activación Core Respiración
 estado_sistema(activo).
 ultima_actualizacion('2024-06-02').
 version_base_conocimiento('1.0').
+% =====================================================
+% MAPEO DE GRUPOS A MÚSCULOS
+% =====================================================
+
+grupo_musculos(pecho,
+    [pecho,triceps,deltoides_anterior]).
+
+grupo_musculos(espalda,
+    [dorsales,trapecio,romboides,biceps,deltoides_posterior]).
+
+grupo_musculos(hombros,
+    [deltoides_anterior,deltoides_lateral,deltoides_posterior,triceps]).
+
+grupo_musculos(biceps,
+    [biceps]).
+
+grupo_musculos(triceps,
+    [triceps]).
+
+grupo_musculos(cuadriceps,
+    [cuadriceps,gluteos]).
+
+grupo_musculos(isquiotibial,
+    [isquiotibiales,gluteos]).
+
+grupo_musculos(gluteos,
+    [gluteos,isquiotibiales]).
+
+grupo_musculos(piernas,
+    [cuadriceps,isquiotibiales,gluteos,pantorrillas]).
+
+grupo_musculos(core,
+    [abdominales,lumbares]).
+% =====================================================
+% RECUPERACIÓN MUSCULAR
+% =====================================================
+
+recuperacion_musculo(pecho,48).
+recuperacion_musculo(triceps,48).
+
+recuperacion_musculo(biceps,48).
+
+recuperacion_musculo(deltoides_anterior,48).
+recuperacion_musculo(deltoides_lateral,48).
+recuperacion_musculo(deltoides_posterior,48).
+
+recuperacion_musculo(dorsales,48).
+recuperacion_musculo(trapecio,48).
+recuperacion_musculo(romboides,48).
+
+recuperacion_musculo(cuadriceps,72).
+recuperacion_musculo(isquiotibiales,72).
+recuperacion_musculo(gluteos,72).
+
+recuperacion_musculo(pantorrillas,48).
+
+recuperacion_musculo(abdominales,24).
+recuperacion_musculo(lumbares,48).
+
+% Asociación entre grupos musculares y ejercicios de movilidad recomendados
+movilidad_para_grupo(pecho,        ex_900).   % Estiramiento de Pecho en Marco
+movilidad_para_grupo(pecho,        ex_915).   % Pec Minor Stretch
+movilidad_para_grupo(espalda,      ex_904).   % Rotación Torácica
+movilidad_para_grupo(espalda,      ex_913).   % Extensión Dorsal en Suelo
+movilidad_para_grupo(hombros,      ex_908).   % Apertura de Hombros con Banda
+movilidad_para_grupo(biceps,       ex_911).   % Estiramiento de Tríceps (antagonista)
+movilidad_para_grupo(triceps,      ex_911).   % Estiramiento de Tríceps
+movilidad_para_grupo(cuadriceps,   ex_906).   % Estiramiento Cuádriceps de Pie
+movilidad_para_grupo(cuadriceps,   ex_910).   % Cossack Squat
+movilidad_para_grupo(isquiotibial, ex_901).   % Estiramiento Isquiotibial de Pie
+movilidad_para_grupo(isquiotibial, ex_903).   % Paloma
+movilidad_para_grupo(gluteos,      ex_905).   % Apertura de Cadera Mariposa
+movilidad_para_grupo(gluteos,      ex_909).   % Hip 90/90
+movilidad_para_grupo(piernas,      ex_901).   % Estiramiento Isquiotibial de Pie
+movilidad_para_grupo(piernas,      ex_906).   % Estiramiento Cuádriceps de Pie
+movilidad_para_grupo(piernas,      ex_912).   % Rotación de Cadera en Suelo
+movilidad_para_grupo(pantorrilla,  ex_914).   % Estiramiento de Pantorrilla en Pared
+movilidad_para_grupo(core,         ex_907).   % Gato-Vaca
+movilidad_para_grupo(core,         ex_902).   % Postura del Niño
