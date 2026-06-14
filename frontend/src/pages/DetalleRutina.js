@@ -135,10 +135,13 @@ function DetalleRutina() {
                       </div>
                     </div>
                     <div className="ejercicio-parametros">
-                      {ej.series && (
+                      {ej.series && ej.repeticiones > 0 && (
                         <span className="param-badge">
                           {ej.series} × {ej.repeticiones} reps
                         </span>
+                      )}
+                      {ej.series && ej.repeticiones === 0 && (
+                        <span className="param-badge">⏱️ 5-10 min</span>
                       )}
                       {ej.descansoSegundos > 0 && (
                         <span className="param-badge">⏱️ {ej.descansoSegundos}s</span>

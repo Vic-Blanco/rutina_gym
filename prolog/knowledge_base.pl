@@ -20,10 +20,10 @@ usuario(user3, 'Carlos', avanzado, definicion, 6, [pecho, espalda, hombros, bice
 
 objetivo(fuerza, 8, 12, 4, 90, 'media-alta').
 objetivo(hipertrofia, 5, 8, 3, 180, 'muy-alta').
-objetivo(definicion, 15, 20, 2, 30, 'media').
+objetivo(definicion, 15, 20, 4, 30, 'media').
 objetivo(hibrido, 10, 15, 3, 45, 'media').
 % Aliases para compatibilidad con el enum Objetivo de Java
-objetivo(resistencia,      15, 20, 2, 30, 'media').        % alias de definicion
+objetivo(resistencia,      15, 20, 4, 30, 'media').        % alias de definicion
 objetivo(acondicionamiento, 10, 15, 3, 45, 'media').        % alias de hibrido
 
 % =====================================================
@@ -292,7 +292,7 @@ ejercicio(ex_811, 'Battle Ropes',           cardio, compuesto, general, principi
 ejercicio(ex_812, 'Saltos al Cajón',        cardio, compuesto, general, intermedio).
 ejercicio(ex_813, 'Kettlebell Swing',       cardio, compuesto, general, intermedio).
 ejercicio(ex_814, 'Air Bike',               cardio, compuesto, general, principiante).
-ejercicio(ex_815, 'Natación',               cardio, compuesto, general, principiante).
+
 
 % MOVILIDAD
 ejercicio(ex_900, 'Estiramiento de Pecho en Marco',    movilidad, aislado,   movilidad, principiante).

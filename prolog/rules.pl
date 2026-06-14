@@ -241,8 +241,9 @@ seleccionar_entrada_calor(auto, GruposDelDia, EjCalor) :-
     ),
     seleccionar_entrada_calor(TipoAuto, GruposDelDia, EjCalor), !.
 
+% Series=1, Reps=0 (sin repeticiones — se realiza por tiempo: 5-10 min)
 seleccionar_entrada_calor(cardio_ligero, _,
-                           ejercicio_info(EjID, Nombre, 1, 10, 0)) :-
+                           ejercicio_info(EjID, Nombre, 1, 0, 0)) :-
     once(ejercicio(EjID, Nombre, cardio, compuesto, general, principiante)), !.
 
 seleccionar_entrada_calor(movilidad_dinamica, _,
@@ -255,8 +256,8 @@ seleccionar_entrada_calor(activacion_muscular, GruposDelDia,
           movilidad_para_grupo(Grupo, EjID),
           ejercicio(EjID, Nombre, _, _, _, _))), !.
 
-% Fallback: cardio ligero si ningún tipo encuentra ejercicio
-seleccionar_entrada_calor(_, _, ejercicio_info(EjID, Nombre, 1, 10, 0)) :-
+% Fallback: cardio ligero si ningún tipo encuentra ejercicio (sin repeticiones)
+seleccionar_entrada_calor(_, _, ejercicio_info(EjID, Nombre, 1, 0, 0)) :-
     once(ejercicio(EjID, Nombre, cardio, _, general, principiante)), !.
 
 % Selecciona N ejercicios de movilidad rotados por número de día
