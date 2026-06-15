@@ -36,9 +36,8 @@ rutina_gym/
     +-- rules.pl            generaci�n, distribuci�n, validaci�n
     +-- integration.pl      predicados de integraci�n con Java
     +-- validation.pl       validaciones adicionales
-    +-- examples.pl         ejemplos de uso
 ```
-
+Hay metodos/clases/reglas/datos adicionales que no se utilizan en esta version ya que fue iniciado con un alcance mayor pero luego se limito a poder hacer una aplicacion funcional con lo basico para llegar con los plazos de entrega.
 ---
 
 ## Cómo levantar el proyecto
