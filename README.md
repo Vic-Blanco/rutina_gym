@@ -11,7 +11,6 @@ Aplicación web para generar rutinas de gimnasio personalizadas. Combina un back
 | Frontend | React |
 | Backend | Java 17 / Spring Boot 3 |
 | Sistema experto | SWI-Prolog |
-| Base de datos | PostgreSQL |
 | Contenedores | Docker / Docker Compose |
 
 ---
@@ -53,10 +52,6 @@ docker-compose up --build
 
 ### Manual
 
-**Base de datos**
-```bash
-createdb rutina_gym_db
-```
 
 **Backend**
 ```bash
@@ -122,3 +117,7 @@ Prolog recibe nivel, objetivo, días y grupos musculares y devuelve una estructu
 Si hay menos grupos que días, los grupos se ciclan para que ningún día quede vacío y cada día repetido muestra ejercicios distintos por rotación.
 
 La rutina mostrada al usuario es **orientativa y genérica**. Se recomienda consultar a un profesional antes de comenzar.
+
+## Desarrollo 
+
+Este proyeto fue asistido con los modelos de IA Cloude haiku 4.5 y Cloude Sonnet 4.6. 
