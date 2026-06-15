@@ -17,26 +17,32 @@ Aplicación web para generar rutinas de gimnasio personalizadas. Combina un back
 
 ## Estructura
 
-```
+## Estructura
+
+```text
 rutina_gym/
-+-- backend/          # API REST (Spring Boot + JPA)
-�   +-- src/main/java/com/rutinagym/
-�       +-- controller/   RutinaController.java
-�       +-- service/      RutinaService.java � PrologService.java
-�       +-- model/        Rutina � DiaEntrenamiento � Ejercicio � enums
-�       +-- dto/          GenerarRutinaRequest.java
-+-- frontend/         # SPA React
-�   +-- src/
-�       +-- pages/    SeleccionarTipo � GenerarRutinaAutomatica � GenerarRutinaPersonalizada � DetalleRutina
-�       +-- api/      api.js
-�       +-- utils/    exerciseImages.js
-+-- prolog/           # Sistema experto
-    +-- knowledge_base.pl   ejercicios, objetivos, movilidad, usuarios
-    +-- rules.pl            generaci�n, distribuci�n, validaci�n
-    +-- integration.pl      predicados de integraci�n con Java
-    +-- validation.pl       validaciones adicionales
+├── backend/                    # API REST (Spring Boot + JPA)
+│   └── src/main/java/com/rutinagym/
+│       ├── controller/         RutinaController.java
+│       ├── service/            RutinaService.java, PrologService.java
+│       ├── model/              Rutina, DiaEntrenamiento, Ejercicio, enums
+│       └── dto/                GenerarRutinaRequest.java
+│
+├── frontend/                   # SPA React
+│   └── src/
+│       ├── pages/             SeleccionarTipo, GenerarRutinaAutomatica,
+│       │                      GenerarRutinaPersonalizada, DetalleRutina
+│       ├── api/               api.js
+│       └── utils/             exerciseImages.js
+│
+└── prolog/                     # Sistema experto
+    ├── knowledge_base.pl       ejercicios, objetivos, movilidad, usuarios
+    ├── rules.pl                generación, distribución, validación
+    ├── integration.pl          predicados de integración con Java
+    └── validation.pl           validaciones adicionales
 ```
-Hay metodos/clases/reglas/datos adicionales que no se utilizan en esta version ya que fue iniciado con un alcance mayor pero luego se limito a poder hacer una aplicacion funcional con lo basico para llegar con los plazos de entrega.
+
+Cabe aclarar que existen clases, métodos, reglas y conjuntos de datos adicionales que no se utilizan en la versión final del sistema. Esto se debe a que el proyecto fue concebido inicialmente con un alcance más amplio, incorporando funcionalidades avanzadas y una base de conocimiento más extensa. Sin embargo, para cumplir con los plazos establecidos y garantizar la entrega de una aplicación completamente funcional, se decidió reducir el alcance y concentrarse en las características esenciales para la generación de rutinas de entrenamiento.
 ---
 
 ## Cómo levantar el proyecto
